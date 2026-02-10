@@ -3,35 +3,60 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // UI Elements
+    const authLinks = document.getElementById('authLinks');
+    const userLinks = document.getElementById('userLinks');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const landingPage = document.getElementById('landingPage');
+    const dashboardPage = document.getElementById('dashboardPage');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Form Elements
     const attendanceForm = document.getElementById('attendanceForm');
     const attendanceTableBody = document.querySelector('#attendanceTable tbody');
-    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Toggle View Function
+    const toggleView = (user) => {
+        if (user) {
+            // User is logged in
+            landingPage.style.display = 'none';
+            dashboardPage.style.display = 'block';
+            authLinks.style.display = 'none';
+            userLinks.style.display = 'flex';
+            userEmailDisplay.textContent = user.email;
+            loadAttendanceData(); // Load data
+        } else {
+            // User is logged out
+            landingPage.style.display = 'flex';
+            dashboardPage.style.display = 'none';
+            authLinks.style.display = 'flex';
+            userLinks.style.display = 'none';
+            attendanceTableBody.innerHTML = ''; // Clear table
+        }
+    };
 
     // Check Authentication State
     onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            // User is not signed in, redirect to login page
-            window.location.href = 'login.html';
-        } else {
-            console.log("User is signed in:", user.email);
-            // Load data only when authenticated
-            loadAttendanceData();
-        }
+        toggleView(user);
     });
 
     // Logout Functionality
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error("Error signing out:", error);
-            alert("Error signing out. See console for details.");
-        }
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                // View will toggle automatically via onAuthStateChanged
+            } catch (error) {
+                console.error("Error signing out:", error);
+                alert("Error signing out.");
+            }
+        });
+    }
 
     // Load Attendance Data (Real-time listener)
     function loadAttendanceData() {
+        if (!auth.currentUser) return;
+
         const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
 
         onSnapshot(q, (snapshot) => {
@@ -46,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             snapshot.forEach((documentSnapshot) => {
                 const record = documentSnapshot.data();
-                const recordId = documentSnapshot.id; // Get the document ID for deletion
+                const recordId = documentSnapshot.id;
                 const row = document.createElement('tr');
 
                 // Format timestamp
@@ -57,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${record.name}</td>
                     <td>${dateDisplay}</td>
                     <td>${timeDisplay}</td>
-                    <td><button class="delete-btn" data-id="${recordId}" style="background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button></td>
+                    <td><button class="delete-btn" data-id="${recordId}" style="background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button></td>
                 `;
                 attendanceTableBody.appendChild(row);
             });
@@ -69,10 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (confirm('Are you sure you want to delete this record?')) {
                         try {
                             await deleteDoc(doc(db, "attendance", id));
-                            console.log("Document successfully deleted!");
                         } catch (error) {
                             console.error("Error removing document: ", error);
-                            alert("Error deleting record: " + error.message);
+                            alert("Error deleting record.");
                         }
                     }
                 });
@@ -85,31 +109,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Form Submission
-    attendanceForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (attendanceForm) {
+        attendanceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const nameInput = document.getElementById('name');
-        const name = nameInput.value.trim();
-
-        if (name) {
-            const now = new Date();
-
-            try {
-                await addDoc(collection(db, "attendance"), {
-                    name: name,
-                    date: now.toLocaleDateString(),
-                    time: now.toLocaleTimeString(),
-                    timestamp: serverTimestamp(), // Firestore server timestamp
-                    userId: auth.currentUser.uid, // Track who added it
-                    userEmail: auth.currentUser.email
-                });
-
-                nameInput.value = ''; // Clear input
-                alert(`Attendance marked for ${name}!`);
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                alert("Error marking attendance: " + error.message);
+            if (!auth.currentUser) {
+                alert("You must be logged in to mark attendance.");
+                return;
             }
-        }
-    });
+
+            const nameInput = document.getElementById('name');
+            const name = nameInput.value.trim();
+
+            if (name) {
+                const now = new Date();
+
+                try {
+                    await addDoc(collection(db, "attendance"), {
+                        name: name,
+                        date: now.toLocaleDateString(),
+                        time: now.toLocaleTimeString(),
+                        timestamp: serverTimestamp(),
+                        userId: auth.currentUser.uid,
+                        userEmail: auth.currentUser.email
+                    });
+
+                    nameInput.value = ''; // Clear input
+                    alert(`Attendance marked for ${name}!`);
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    alert("Error marking attendance: " + error.message);
+                }
+            }
+        });
+    }
 });

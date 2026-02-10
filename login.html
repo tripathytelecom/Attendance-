@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 
@@ -57,64 +56,4 @@
     </script>
 </body>
 
-=======
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Attendance System</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-    <div class="container auth-container">
-        <header>
-            <h1>Login</h1>
-        </header>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="loginEmail">Email:</label>
-                <input type="email" id="loginEmail" required>
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">Password:</label>
-                <input type="password" id="loginPassword" required>
-            </div>
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
-        <div id="authMessage" class="message"></div>
-    </div>
-
-    <script type="module">
-        import { auth } from './firebase-config.js';
-        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const loginForm = document.getElementById('loginForm');
-        const authMessage = document.getElementById('authMessage');
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                authMessage.textContent = "Logged in successfully! Redirecting...";
-                authMessage.style.color = "green";
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            } catch (error) {
-                authMessage.textContent = "Invalid email or password.";
-                authMessage.style.color = "red";
-                console.error(error);
-            }
-        });
-    </script>
-</body>
-
->>>>>>> 7c8564dac7e5d10c66d6cb72ec1c93b50cfceff6
 </html>

@@ -1,12 +1,13 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Attendance System</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container auth-container">
         <header>
@@ -18,13 +19,26 @@
                 <input type="email" id="signupEmail" required>
             </div>
             <div class="form-group">
-                <label for="signupPassword">Password:</label>
+                <label for="signupPassword">Create Password:</label>
                 <input type="password" id="signupPassword" required minlength="6">
             </div>
             <button type="submit">Sign Up</button>
         </form>
         <p>Already have an account? <a href="login.html">Login here</a></p>
         <div id="authMessage" class="message"></div>
+
+        <!-- Area to show credentials after signup (User Request) -->
+        <div id="credentialsDisplay"
+            style="display:none; margin-top: 20px; padding: 15px; background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 4px;">
+            <h3>Account Created!</h3>
+            <p><strong>Email:</strong> <span id="displayEmail"></span></p>
+            <p><strong>Password:</strong> <span id="displayPassword"></span></p>
+            <p style="font-size: 0.9em; color: #666;">Please note this down. It will disappear when you leave this page.
+            </p>
+            <button onclick="window.location.href='login.html'"
+                style="background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 10px;">Go
+                to Login</button>
+        </div>
     </div>
 
     <script type="module">
@@ -33,6 +47,7 @@
 
         const signupForm = document.getElementById('signupForm');
         const authMessage = document.getElementById('authMessage');
+        const credentialsDisplay = document.getElementById('credentialsDisplay');
 
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -41,11 +56,16 @@
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                authMessage.textContent = "Account created successfully! Redirecting...";
-                authMessage.style.color = "green";
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
+
+                // Hide Form and Show Credentials
+                signupForm.style.display = 'none';
+                document.querySelector('p').style.display = 'none'; // Hide "Already have account" link
+
+                document.getElementById('displayEmail').textContent = email;
+                document.getElementById('displayPassword').textContent = password;
+                credentialsDisplay.style.display = 'block';
+
+                authMessage.textContent = "";
             } catch (error) {
                 authMessage.textContent = error.message;
                 authMessage.style.color = "red";
@@ -53,61 +73,5 @@
         });
     </script>
 </body>
+
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Attendance System</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container auth-container">
-        <header>
-            <h1>Create Account</h1>
-        </header>
-        <form id="signupForm">
-            <div class="form-group">
-                <label for="signupEmail">Email:</label>
-                <input type="email" id="signupEmail" required>
-            </div>
-            <div class="form-group">
-                <label for="signupPassword">Password:</label>
-                <input type="password" id="signupPassword" required minlength="6">
-            </div>
-            <button type="submit">Sign Up</button>
-        </form>
-        <p>Already have an account? <a href="login.html">Login here</a></p>
-        <div id="authMessage" class="message"></div>
-    </div>
-
-    <script type="module">
-        import { auth } from './firebase-config.js';
-        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const signupForm = document.getElementById('signupForm');
-        const authMessage = document.getElementById('authMessage');
-
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                authMessage.textContent = "Account created successfully! Redirecting...";
-                authMessage.style.color = "green";
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-            } catch (error) {
-                authMessage.textContent = error.message;
-                authMessage.style.color = "red";
-            }
-        });
-    </script>
-</body>
-</html>
->>>>>>> 7c8564dac7e5d10c66d6cb72ec1c93b50cfceff6

@@ -6,13 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance System</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Attendance System</h1>
-            <button id="logoutBtn" style="width: auto; padding: 0.5rem 1rem; background-color: #f44336;">Logout</button>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">Tripathy Telecom</div>
+        <div class="nav-links">
+            <!-- Auth Links (Show when logged out) -->
+            <div id="authLinks">
+                <a href="login.html" class="nav-btn">Login</a>
+                <a href="signup.html" class="nav-btn signup-btn">Sign Up</a>
+            </div>
+            <!-- User Links (Show when logged in) -->
+            <div id="userLinks" style="display: none;">
+                <span id="userEmailDisplay"></span>
+                <button id="logoutBtn" class="nav-btn logout-btn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page (Show when logged out) -->
+    <div id="landingPage" class="landing-container">
+        <div class="hero-content">
+            <h1>Smart Attendance Management</h1>
+            <p>Track attendance efficiently with our secure and real-time system. Login to your dashboard to get
+                started.</p>
+            <div class="hero-buttons">
+                <a href="login.html" class="cta-btn">Login</a>
+                <a href="signup.html" class="cta-btn secondary">Create Account</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard (Show when logged in) -->
+    <div id="dashboardPage" class="container" style="display: none;">
+        <header class="dashboard-header">
+            <h1>Attendance Dashboard</h1>
         </header>
 
         <section class="attendance-form">
@@ -20,7 +53,7 @@
             <form id="attendanceForm">
                 <div class="form-group">
                     <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                    <input type="text" id="name" name="name" placeholder="Enter employee name" required>
                 </div>
                 <button type="submit" id="markBtn">Mark Present</button>
             </form>
