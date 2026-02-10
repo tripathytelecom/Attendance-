@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // UI Elements
     const authLinks = document.getElementById('authLinks');
     const userLinks = document.getElementById('userLinks');
-    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const userEmailDisplay = document.getElementById('userEmailDisplay'); // Will rename this logically in finding, but keeping ID for compatibility unless we change index.html
     const landingPage = document.getElementById('landingPage');
     const dashboardPage = document.getElementById('dashboardPage');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -24,21 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logout Function
     const logout = () => {
         localStorage.removeItem(STORAGE_KEY_USER);
-        window.location.href = 'login.html'; // Redirect to login or refresh
-        // For SPA feel, we could just reload
-        window.location.reload();
+        window.location.href = 'index.html';
     };
 
     // --- VIEW LOGIC ---
     const toggleView = () => {
         const user = getCurrentUser();
+        // Update the display to show Name if available, check ID existence first
+        if (userEmailDisplay && user) {
+            userEmailDisplay.textContent = `Welcome, ${user.name || user.mobile}`;
+        }
+
         if (user) {
             // User is logged in
             if (landingPage) landingPage.style.display = 'none';
             if (dashboardPage) dashboardPage.style.display = 'block';
             if (authLinks) authLinks.style.display = 'none';
             if (userLinks) userLinks.style.display = 'flex';
-            if (userEmailDisplay) userEmailDisplay.textContent = user.email;
+
             loadAttendanceData(); // Load data
         } else {
             // User is logged out
@@ -70,10 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
 
-        // Filter records for current user (optional: if you want private data)
-        // For now, let's show all records or filter by userId if we saved it
-        // Let's assume shared data for simplicity, or private. 
-        // Based on previous code, we saved userId. Let's filter by it.
+        // Filter records for current user
+        // We use user.uid to link records
         const userRecords = allRecords.filter(record => record.userId === user.uid);
 
         // Sort by timestamp descending
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (records.length === 0) {
             const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" style="text-align:center;">No records found</td>`;
+            row.innerHTML = `<td colspan="4" style="text-align:center;">No records found. Mark your attendance above!</td>`;
             attendanceTableBody.appendChild(row);
             return;
         }
@@ -100,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${record.name}</td>
                 <td>${record.date}</td>
                 <td>${record.time}</td>
-                <td><button class="delete-btn" data-id="${record.id}" style="background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button></td>
+                <td><button class="delete-btn" data-id="${record.id}" style="background-color: var(--danger-color); color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 0.9rem;">Delete</button></td>
             `;
             attendanceTableBody.appendChild(row);
         });
@@ -131,13 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name) {
                 const now = new Date();
                 const newRecord = {
-                    id: Date.now().toString(), // Simple ID
+                    id: Date.now().toString(),
                     name: name,
                     date: now.toLocaleDateString(),
                     time: now.toLocaleTimeString(),
                     timestamp: now.getTime(),
                     userId: user.uid,
-                    userEmail: user.email
+                    userEmail: user.email // Keep for legacy, though we use uid
                 };
 
                 // Save to LocalStorage
@@ -146,7 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(allRecords));
 
                 nameInput.value = '';
-                alert(`Attendance marked for ${name}!`);
+                // No alert needed if we update UI immediately, but user might want confirmation
+                // alert(`Attendance marked for ${name}!`); 
                 loadAttendanceData(); // Refresh table
             }
         });

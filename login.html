@@ -6,29 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Attendance System</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="container auth-container">
         <header>
-            <h1>Login</h1>
+            <h1>Welcome Back</h1>
+            <p>Login to manage your attendance</p>
         </header>
         <form id="loginForm">
             <div class="form-group">
-                <label for="loginEmail">Email:</label>
-                <input type="email" id="loginEmail" required>
+                <label for="loginMobile">Mobile Number</label>
+                <input type="tel" id="loginMobile" placeholder="Enter your mobile number" pattern="[0-9]{10}" required>
             </div>
             <div class="form-group">
-                <label for="loginPassword">Password:</label>
-                <input type="password" id="loginPassword" required>
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
             </div>
-            <button type="submit">Login</button>
+            <button type="submit" class="auth-btn">Login</button>
         </form>
-        <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+        <p class="auth-link">Don't have an account? <a href="signup.html">Register here</a></p>
         <div id="authMessage" class="message"></div>
     </div>
 
-    <!-- Removed module type, using standard script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const loginForm = document.getElementById('loginForm');
@@ -39,31 +40,34 @@
 
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = document.getElementById('loginEmail').value.trim();
+                const mobile = document.getElementById('loginMobile').value.trim();
                 const password = document.getElementById('loginPassword').value;
 
                 // 1. Get existing users
                 const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
 
-                // 2. Validate credentials
-                const user = users.find(u => u.email === email && u.password === password);
+                // 2. Validate credentials (check mobile and password)
+                const user = users.find(u => u.mobile === mobile && u.password === password);
 
                 if (user) {
                     // 3. Set current user
-                    // Don't store password in session
                     const sessionUser = {
                         uid: user.uid,
-                        email: user.email
+                        name: user.name,
+                        email: user.email,
+                        mobile: user.mobile
                     };
                     localStorage.setItem(STORAGE_KEY_CURRENT_USER, JSON.stringify(sessionUser));
 
-                    authMessage.textContent = "Logged in successfully! Redirecting...";
+                    authMessage.textContent = "Login Successful! Redirecting...";
+                    authMessage.style.className = "message success";
                     authMessage.style.color = "green";
+
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 1000);
                 } else {
-                    authMessage.textContent = "Invalid email or password.";
+                    authMessage.textContent = "Invalid mobile number or password.";
                     authMessage.style.color = "red";
                 }
             });

@@ -6,42 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Attendance System</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="container auth-container">
         <header>
             <h1>Create Account</h1>
+            <p>Join us to manage attendance efficiently</p>
         </header>
         <form id="signupForm">
             <div class="form-group">
-                <label for="signupEmail">Email:</label>
-                <input type="email" id="signupEmail" required>
+                <label for="signupName">Full Name</label>
+                <input type="text" id="signupName" placeholder="Enter your full name" required>
             </div>
             <div class="form-group">
-                <label for="signupPassword">Create Password:</label>
-                <input type="password" id="signupPassword" required minlength="6">
+                <label for="signupMobile">Mobile Number</label>
+                <input type="tel" id="signupMobile" placeholder="Enter mobile number" pattern="[0-9]{10}"
+                    title="Ten digits code" required>
             </div>
-            <button type="submit">Sign Up</button>
+            <div class="form-group">
+                <label for="signupEmail">Email Address</label>
+                <input type="email" id="signupEmail" placeholder="Enter email address" required>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" placeholder="Create a password" required minlength="6">
+            </div>
+            <button type="submit" class="auth-btn">Register</button>
         </form>
-        <p>Already have an account? <a href="login.html">Login here</a></p>
+        <p class="auth-link">Already have an account? <a href="login.html">Login here</a></p>
         <div id="authMessage" class="message"></div>
 
-        <!-- Area to show credentials after signup (User Request) -->
+        <!-- Area to show credentials after signup -->
         <div id="credentialsDisplay"
-            style="display:none; margin-top: 20px; padding: 15px; background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 4px;">
-            <h3>Account Created!</h3>
-            <p><strong>Email:</strong> <span id="displayEmail"></span></p>
-            <p><strong>Password:</strong> <span id="displayPassword"></span></p>
-            <p style="font-size: 0.9em; color: #666;">Please note this down. It will disappear when you leave this page.
-            </p>
+            style="display:none; margin-top: 20px; padding: 15px; background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 8px;">
+            <h3 style="color: #2e7d32; margin-top: 0;">Registration Successful!</h3>
+            <div style="text-align: left; margin: 10px 0;">
+                <p><strong>Name:</strong> <span id="displayName"></span></p>
+                <p><strong>Mobile:</strong> <span id="displayMobile"></span></p>
+                <p><strong>Password:</strong> <span id="displayPassword"></span></p>
+            </div>
+            <p style="font-size: 0.9em; color: #666;">Please use your Mobile Number and Password to login.</p>
             <button onclick="window.location.href='login.html'"
-                style="background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 10px;">Go
+                style="background-color: #4CAF50; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600;">Go
                 to Login</button>
         </div>
     </div>
 
-    <!-- Removed module type, using standard script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const signupForm = document.getElementById('signupForm');
@@ -52,25 +64,29 @@
 
             signupForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                const name = document.getElementById('signupName').value.trim();
+                const mobile = document.getElementById('signupMobile').value.trim();
                 const email = document.getElementById('signupEmail').value.trim();
                 const password = document.getElementById('signupPassword').value;
 
                 // 1. Get existing users
                 const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
 
-                // 2. Check if user exists
-                const userExists = users.some(u => u.email === email);
+                // 2. Check if user exists (by Mobile or Email)
+                const userExists = users.some(u => u.mobile === mobile);
                 if (userExists) {
-                    authMessage.textContent = "User already exists with this email.";
+                    authMessage.textContent = "User already exists with this mobile number.";
                     authMessage.style.color = "red";
                     return;
                 }
 
                 // 3. Create new user
                 const newUser = {
-                    uid: Date.now().toString(), // Simple mock ID
+                    uid: Date.now().toString(),
+                    name: name,
+                    mobile: mobile,
                     email: email,
-                    password: password // In a real app, never store passwords efficiently!
+                    password: password
                 };
 
                 // 4. Save to LocalStorage
@@ -79,9 +95,11 @@
 
                 // 5. Success UI
                 signupForm.style.display = 'none';
-                document.querySelector('p').style.display = 'none';
+                document.querySelector('.auth-link').style.display = 'none';
+                document.querySelector('header').style.display = 'none';
 
-                document.getElementById('displayEmail').textContent = email;
+                document.getElementById('displayName').textContent = name;
+                document.getElementById('displayMobile').textContent = mobile;
                 document.getElementById('displayPassword').textContent = password;
                 credentialsDisplay.style.display = 'block';
 
