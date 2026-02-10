@@ -116,3 +116,29 @@ th {
 tr:hover {
     background-color: #f9f9f9;
 }
+
+/* Auth Styles */
+.auth-container {
+    max-width: 400px;
+}
+
+.auth-container p {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.message {
+    text-align: center;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}

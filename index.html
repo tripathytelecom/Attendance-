@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance System</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
-        <header>
+        <header style="display: flex; justify-content: space-between; align-items: center;">
             <h1>Attendance System</h1>
+            <button id="logoutBtn" style="width: auto; padding: 0.5rem 1rem; background-color: #f44336;">Logout</button>
         </header>
 
         <section class="attendance-form">
@@ -39,10 +42,10 @@
                     </tbody>
                 </table>
             </div>
-            <button id="clearBtn" class="secondary-btn">Clear Logs</button>
         </section>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
+
 </html>
