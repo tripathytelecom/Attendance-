@@ -41,35 +41,52 @@
         </div>
     </div>
 
-    <script type="module">
-        import { auth } from './firebase-config.js';
-        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <!-- Removed module type, using standard script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const signupForm = document.getElementById('signupForm');
+            const authMessage = document.getElementById('authMessage');
+            const credentialsDisplay = document.getElementById('credentialsDisplay');
 
-        const signupForm = document.getElementById('signupForm');
-        const authMessage = document.getElementById('authMessage');
-        const credentialsDisplay = document.getElementById('credentialsDisplay');
+            const STORAGE_KEY_USERS = 'attendance_users';
 
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
 
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
+                // 1. Get existing users
+                const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
 
-                // Hide Form and Show Credentials
+                // 2. Check if user exists
+                const userExists = users.some(u => u.email === email);
+                if (userExists) {
+                    authMessage.textContent = "User already exists with this email.";
+                    authMessage.style.color = "red";
+                    return;
+                }
+
+                // 3. Create new user
+                const newUser = {
+                    uid: Date.now().toString(), // Simple mock ID
+                    email: email,
+                    password: password // In a real app, never store passwords efficiently!
+                };
+
+                // 4. Save to LocalStorage
+                users.push(newUser);
+                localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+
+                // 5. Success UI
                 signupForm.style.display = 'none';
-                document.querySelector('p').style.display = 'none'; // Hide "Already have account" link
+                document.querySelector('p').style.display = 'none';
 
                 document.getElementById('displayEmail').textContent = email;
                 document.getElementById('displayPassword').textContent = password;
                 credentialsDisplay.style.display = 'block';
 
                 authMessage.textContent = "";
-            } catch (error) {
-                authMessage.textContent = error.message;
-                authMessage.style.color = "red";
-            }
+            });
         });
     </script>
 </body>

@@ -1,7 +1,3 @@
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 document.addEventListener('DOMContentLoaded', () => {
     // UI Elements
     const authLinks = document.getElementById('authLinks');
@@ -15,106 +11,117 @@ document.addEventListener('DOMContentLoaded', () => {
     const attendanceForm = document.getElementById('attendanceForm');
     const attendanceTableBody = document.querySelector('#attendanceTable tbody');
 
-    // Toggle View Function
-    const toggleView = (user) => {
+    // --- MOCK AUTHENTICATION (LocalStorage) ---
+    const STORAGE_KEY_USER = 'attendance_current_user';
+    const STORAGE_KEY_DATA = 'attendance_records';
+
+    // Check if user is logged in
+    const getCurrentUser = () => {
+        const userJson = localStorage.getItem(STORAGE_KEY_USER);
+        return userJson ? JSON.parse(userJson) : null;
+    };
+
+    // Logout Function
+    const logout = () => {
+        localStorage.removeItem(STORAGE_KEY_USER);
+        window.location.href = 'login.html'; // Redirect to login or refresh
+        // For SPA feel, we could just reload
+        window.location.reload();
+    };
+
+    // --- VIEW LOGIC ---
+    const toggleView = () => {
+        const user = getCurrentUser();
         if (user) {
             // User is logged in
-            landingPage.style.display = 'none';
-            dashboardPage.style.display = 'block';
-            authLinks.style.display = 'none';
-            userLinks.style.display = 'flex';
-            userEmailDisplay.textContent = user.email;
+            if (landingPage) landingPage.style.display = 'none';
+            if (dashboardPage) dashboardPage.style.display = 'block';
+            if (authLinks) authLinks.style.display = 'none';
+            if (userLinks) userLinks.style.display = 'flex';
+            if (userEmailDisplay) userEmailDisplay.textContent = user.email;
             loadAttendanceData(); // Load data
         } else {
             // User is logged out
-            landingPage.style.display = 'flex';
-            dashboardPage.style.display = 'none';
-            authLinks.style.display = 'flex';
-            userLinks.style.display = 'none';
-            attendanceTableBody.innerHTML = ''; // Clear table
+            if (landingPage) landingPage.style.display = 'flex';
+            if (dashboardPage) dashboardPage.style.display = 'none';
+            if (authLinks) authLinks.style.display = 'flex';
+            if (userLinks) userLinks.style.display = 'none';
+            if (attendanceTableBody) attendanceTableBody.innerHTML = ''; // Clear table
         }
     };
 
-    // Check Authentication State
-    onAuthStateChanged(auth, (user) => {
-        toggleView(user);
-    });
+    // Initialize View
+    toggleView();
 
-    // Logout Functionality
+    // Logout Event Listener
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                // View will toggle automatically via onAuthStateChanged
-            } catch (error) {
-                console.error("Error signing out:", error);
-                alert("Error signing out.");
-            }
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
         });
     }
 
-    // Load Attendance Data (Real-time listener)
+    // --- DATA LOGIC (LocalStorage) ---
+
+    // Load Attendance Data
     function loadAttendanceData() {
-        if (!auth.currentUser) return;
+        const user = getCurrentUser();
+        if (!user) return;
 
-        const q = query(collection(db, "attendance"), orderBy("timestamp", "desc"));
+        const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
 
-        onSnapshot(q, (snapshot) => {
-            attendanceTableBody.innerHTML = '';
+        // Filter records for current user (optional: if you want private data)
+        // For now, let's show all records or filter by userId if we saved it
+        // Let's assume shared data for simplicity, or private. 
+        // Based on previous code, we saved userId. Let's filter by it.
+        const userRecords = allRecords.filter(record => record.userId === user.uid);
 
-            if (snapshot.empty) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" style="text-align:center;">No records found</td>`;
-                attendanceTableBody.appendChild(row);
-                return;
-            }
+        // Sort by timestamp descending
+        userRecords.sort((a, b) => b.timestamp - a.timestamp);
 
-            snapshot.forEach((documentSnapshot) => {
-                const record = documentSnapshot.data();
-                const recordId = documentSnapshot.id;
-                const row = document.createElement('tr');
+        renderTable(userRecords);
+    }
 
-                // Format timestamp
-                const dateDisplay = record.date || (record.timestamp ? new Date(record.timestamp.seconds * 1000).toLocaleDateString() : 'N/A');
-                const timeDisplay = record.time || (record.timestamp ? new Date(record.timestamp.seconds * 1000).toLocaleTimeString() : 'N/A');
+    // Render Table
+    function renderTable(records) {
+        if (!attendanceTableBody) return;
+        attendanceTableBody.innerHTML = '';
 
-                row.innerHTML = `
-                    <td>${record.name}</td>
-                    <td>${dateDisplay}</td>
-                    <td>${timeDisplay}</td>
-                    <td><button class="delete-btn" data-id="${recordId}" style="background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button></td>
-                `;
-                attendanceTableBody.appendChild(row);
+        if (records.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="4" style="text-align:center;">No records found</td>`;
+            attendanceTableBody.appendChild(row);
+            return;
+        }
+
+        records.forEach(record => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.name}</td>
+                <td>${record.date}</td>
+                <td>${record.time}</td>
+                <td><button class="delete-btn" data-id="${record.id}" style="background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">Delete</button></td>
+            `;
+            attendanceTableBody.appendChild(row);
+        });
+
+        // Add Delete Event Listeners
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-id');
+                deleteRecord(id);
             });
-
-            // Add event listeners to delete buttons
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    if (confirm('Are you sure you want to delete this record?')) {
-                        try {
-                            await deleteDoc(doc(db, "attendance", id));
-                        } catch (error) {
-                            console.error("Error removing document: ", error);
-                            alert("Error deleting record.");
-                        }
-                    }
-                });
-            });
-
-        }, (error) => {
-            console.error("Error getting documents: ", error);
-            attendanceTableBody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Error loading data: ${error.message}</td></tr>`;
         });
     }
 
-    // Handle Form Submission
+    // Add Record
     if (attendanceForm) {
-        attendanceForm.addEventListener('submit', async (e) => {
+        attendanceForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            if (!auth.currentUser) {
-                alert("You must be logged in to mark attendance.");
+            const user = getCurrentUser();
+            if (!user) {
+                alert("You must be logged in.");
                 return;
             }
 
@@ -123,24 +130,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (name) {
                 const now = new Date();
+                const newRecord = {
+                    id: Date.now().toString(), // Simple ID
+                    name: name,
+                    date: now.toLocaleDateString(),
+                    time: now.toLocaleTimeString(),
+                    timestamp: now.getTime(),
+                    userId: user.uid,
+                    userEmail: user.email
+                };
 
-                try {
-                    await addDoc(collection(db, "attendance"), {
-                        name: name,
-                        date: now.toLocaleDateString(),
-                        time: now.toLocaleTimeString(),
-                        timestamp: serverTimestamp(),
-                        userId: auth.currentUser.uid,
-                        userEmail: auth.currentUser.email
-                    });
+                // Save to LocalStorage
+                const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
+                allRecords.push(newRecord);
+                localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(allRecords));
 
-                    nameInput.value = ''; // Clear input
-                    alert(`Attendance marked for ${name}!`);
-                } catch (error) {
-                    console.error("Error adding document: ", error);
-                    alert("Error marking attendance: " + error.message);
-                }
+                nameInput.value = '';
+                alert(`Attendance marked for ${name}!`);
+                loadAttendanceData(); // Refresh table
             }
         });
+    }
+
+    // Delete Record
+    function deleteRecord(id) {
+        if (confirm('Are you sure you want to delete this record?')) {
+            let allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
+            allRecords = allRecords.filter(record => record.id !== id);
+            localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(allRecords));
+            loadAttendanceData(); // Refresh table
+        }
     }
 });
