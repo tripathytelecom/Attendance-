@@ -31,9 +31,9 @@
 
         <form id="adminLoginForm">
             <div class="form-group">
-                <label for="adminUsername">Username</label>
-                <input type="text" id="adminUsername" placeholder="Enter username" value="tripathytelecom" disabled
-                    style="background-color: #e9ecef;">
+                <label for="adminUsername">Email Address</label>
+                <input type="email" id="adminUsername" placeholder="help.santanu1@gmail.com" required
+                    style="background-color: white;">
             </div>
             <div class="form-group">
                 <label for="adminCode">Authenticator Code</label>
@@ -56,12 +56,13 @@
             // In a real app, this should be unique per user and stored securely serverside.
             // For this offline demo, we use a fixed secret.
             const SECRET = 'JBSWY3DPEHPK3PXP'; // Example Base32
+            const ADMIN_EMAIL = 'help.santanu1@gmail.com';
 
             document.getElementById('secretDisplay').textContent = SECRET;
 
             // 2. Generate QR Code URL
-            // Name: TripathyTelecom, Account: Admin
-            const label = 'TripathyTelecom:Admin';
+            // Name: TripathyTelecom, Account: help.santanu1@gmail.com
+            const label = `TripathyTelecom:${ADMIN_EMAIL}`;
             const issuer = 'TripathyTelecom';
             const otpauthUrl = `otpauth://totp/${label}?secret=${SECRET}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
 
@@ -71,7 +72,15 @@
             // 3. Login Handler
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                const emailInput = document.getElementById('adminUsername').value.trim();
                 const code = document.getElementById('adminCode').value.trim();
+
+                // Validate Email
+                if (emailInput !== ADMIN_EMAIL) {
+                    authMessage.textContent = "Invalid Email Address.";
+                    authMessage.style.color = "red";
+                    return;
+                }
 
                 // Create TOTP object
                 const totp = new OTPAuth.TOTP({
