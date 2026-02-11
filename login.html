@@ -73,7 +73,7 @@
                         window.location.href = 'index.html';
                     }, 1000);
                 } else {
-                    authMessage.textContent = "Invalid mobile number or password.";
+                    authMessage.innerHTML = `Invalid mobile number or password.<br><small style="color:gray">Debug: Verified against ${users.length} registered users.</small>`;
                     authMessage.style.color = "red";
                 }
             });
