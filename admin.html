@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Attendance System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Load OTPAuth library for TOTP generation/verification -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.2/otpauth.min.js"></script>
+</head>
+
+<body>
+    <div class="container auth-container">
+        <header>
+            <h1>Admin Login</h1>
+            <p>Secure Area - Authorized Personnel Only</p>
+        </header>
+
+        <!-- Setup Section (Normally hidden after setup, but showing for demo) -->
+        <div id="setupSection"
+            style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd; font-size: 0.9em; text-align: center;">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #0284c7;">scan this QR code with Google
+                Authenticator:</p>
+            <!-- QR Code pointing to otpauth:// protocol -->
+            <img id="qrCode" src="" alt="QR Code"
+                style="width: 150px; height: 150px; border: 4px solid white; border-radius: 8px;">
+            <p style="margin: 10px 0 0 0; color: #555;">Secret Key: <strong id="secretDisplay"></strong></p>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="adminUsername">Username</label>
+                <input type="text" id="adminUsername" placeholder="Enter username" value="tripathytelecom" disabled
+                    style="background-color: #e9ecef;">
+            </div>
+            <div class="form-group">
+                <label for="adminCode">Authenticator Code</label>
+                <input type="text" id="adminCode" placeholder="Enter 6-digit code" pattern="[0-9]{6}" maxlength="6"
+                    required autocomplete="off">
+            </div>
+            <button type="submit" class="auth-btn" style="background-color: #333;">Secure Login</button>
+        </form>
+
+        <div id="authMessage" class="message"></div>
+        <p class="auth-link"><a href="index.html">← Back to Home</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('adminLoginForm');
+            const authMessage = document.getElementById('authMessage');
+
+            // 1. Define the Secret (Base32)
+            // In a real app, this should be unique per user and stored securely serverside.
+            // For this offline demo, we use a fixed secret.
+            const SECRET = 'JBSWY3DPEHPK3PXP'; // Example Base32
+
+            document.getElementById('secretDisplay').textContent = SECRET;
+
+            // 2. Generate QR Code URL
+            // Name: TripathyTelecom, Account: Admin
+            const label = 'TripathyTelecom:Admin';
+            const issuer = 'TripathyTelecom';
+            const otpauthUrl = `otpauth://totp/${label}?secret=${SECRET}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+
+            // Generate QR Image using an API
+            document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(otpauthUrl)}`;
+
+            // 3. Login Handler
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const code = document.getElementById('adminCode').value.trim();
+
+                // Create TOTP object
+                const totp = new OTPAuth.TOTP({
+                    issuer: issuer,
+                    label: label,
+                    algorithm: 'SHA1',
+                    digits: 6,
+                    period: 30,
+                    secret: OTPAuth.Secret.fromBase32(SECRET)
+                });
+
+                // Verify Token
+                // delta returns null if invalid, or integer if valid (window difference)
+                const delta = totp.validate({ token: code, window: 1 });
+
+                if (delta !== null) {
+                    // Success
+                    authMessage.textContent = "Authentication Verified! Redirecting...";
+                    authMessage.style.color = "green";
+
+                    // Set Admin Session
+                    sessionStorage.setItem('attendance_admin_logged_in', 'true');
+
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html';
+                    }, 1000);
+                } else {
+                    // Fail
+                    authMessage.textContent = "Invalid Code. Please try again.";
+                    authMessage.style.color = "red";
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

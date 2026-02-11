@@ -29,6 +29,11 @@
         </div>
     </nav>
 
+    <!-- NOTICE BOARD (Dynamic) -->
+    <div id="siteNotice" class="notice-banner" style="display: none;">
+        <strong>📢 Announcement:</strong> <span id="noticeText"></span>
+    </div>
+
     <!-- Landing Page (Show when logged out) -->
     <div id="landingPage" class="landing-container">
         <div class="hero-content">
@@ -79,6 +84,20 @@
         </section>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for Notice
+            const notice = localStorage.getItem('site_announcement');
+            if (notice) {
+                const noticeEl = document.getElementById('siteNotice');
+                const textEl = document.getElementById('noticeText');
+                if (noticeEl && textEl) {
+                    textEl.textContent = notice;
+                    noticeEl.style.display = 'block';
+                }
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 
