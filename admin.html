@@ -18,29 +18,26 @@
             <p>Secure Area - Authorized Personnel Only</p>
         </header>
 
-        <!-- Setup Section (Normally hidden after setup, but showing for demo) -->
-        <div id="setupSection"
-            style="margin-bottom: 20px; padding: 15px; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd; font-size: 0.9em; text-align: center;">
-            <p style="margin: 0 0 10px 0; font-weight: 600; color: #0284c7;">scan this QR code with Google
-                Authenticator:</p>
-            <!-- QR Code pointing to otpauth:// protocol -->
-            <img id="qrCode" src="" alt="QR Code"
-                style="width: 150px; height: 150px; border: 4px solid white; border-radius: 8px;">
-            <p style="margin: 10px 0 0 0; color: #555;">Secret Key: <strong id="secretDisplay"></strong></p>
-        </div>
-
         <form id="adminLoginForm">
             <div class="form-group">
-                <label for="adminUsername">Email Address</label>
-                <input type="email" id="adminUsername" placeholder="help.santanu1@gmail.com" required
-                    style="background-color: white;">
+                <label for="adminEmail">Email Address</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="email" id="adminEmail" placeholder="help.santanu1@gmail.com" required
+                        style="background-color: white;">
+                    <button type="button" id="sendOtpBtn"
+                        style="width: 120px; background-color: #0f172a; color: white; border: none; border-radius: 8px; cursor: pointer;">Send
+                        OTP</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="adminCode">Authenticator Code</label>
+
+            <div class="form-group" id="otpSection" style="display: none;">
+                <label for="adminCode">Enter OTP Code</label>
                 <input type="text" id="adminCode" placeholder="Enter 6-digit code" pattern="[0-9]{6}" maxlength="6"
                     required autocomplete="off">
             </div>
-            <button type="submit" class="auth-btn" style="background-color: #333;">Secure Login</button>
+
+            <button type="submit" class="auth-btn" id="loginBtn" style="background-color: #333; display: none;">Secure
+                Login</button>
         </form>
 
         <div id="authMessage" class="message"></div>
@@ -51,52 +48,46 @@
         document.addEventListener('DOMContentLoaded', () => {
             const loginForm = document.getElementById('adminLoginForm');
             const authMessage = document.getElementById('authMessage');
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            const otpSection = document.getElementById('otpSection');
+            const loginBtn = document.getElementById('loginBtn');
+            const adminEmailInput = document.getElementById('adminEmail');
 
-            // 1. Define the Secret (Base32)
-            // In a real app, this should be unique per user and stored securely serverside.
-            // For this offline demo, we use a fixed secret.
-            const SECRET = 'JBSWY3DPEHPK3PXP'; // Example Base32
             const ADMIN_EMAIL = 'help.santanu1@gmail.com';
+            let generatedOTP = null;
 
-            document.getElementById('secretDisplay').textContent = SECRET;
+            // 1. Send OTP Handler
+            sendOtpBtn.addEventListener('click', () => {
+                const email = adminEmailInput.value.trim();
 
-            // 2. Generate QR Code URL
-            // Name: TripathyTelecom, Account: help.santanu1@gmail.com
-            const label = `TripathyTelecom:${ADMIN_EMAIL}`;
-            const issuer = 'TripathyTelecom';
-            const otpauthUrl = `otpauth://totp/${label}?secret=${SECRET}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
-
-            // Generate QR Image using an API
-            document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(otpauthUrl)}`;
-
-            // 3. Login Handler
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const emailInput = document.getElementById('adminUsername').value.trim();
-                const code = document.getElementById('adminCode').value.trim();
-
-                // Validate Email
-                if (emailInput !== ADMIN_EMAIL) {
-                    authMessage.textContent = "Invalid Email Address.";
+                if (email !== ADMIN_EMAIL) {
+                    authMessage.textContent = "Access Denied. Email not authorized.";
                     authMessage.style.color = "red";
                     return;
                 }
 
-                // Create TOTP object
-                const totp = new OTPAuth.TOTP({
-                    issuer: issuer,
-                    label: label,
-                    algorithm: 'SHA1',
-                    digits: 6,
-                    period: 30,
-                    secret: OTPAuth.Secret.fromBase32(SECRET)
-                });
+                // Generate Random 6-digit OTP
+                generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-                // Verify Token
-                // delta returns null if invalid, or integer if valid (window difference)
-                const delta = totp.validate({ token: code, window: 1 });
+                // SIMULATION: Show Aler
+                alert(`[SIMULATION]\n\nEmail sent to: ${ADMIN_EMAIL}\n\nYour OTP Verification Code is: ${generatedOTP}`);
 
-                if (delta !== null) {
+                authMessage.textContent = `OTP sent to ${email}. Please check your inbox (and popup).`;
+                authMessage.style.color = "green";
+
+                // Show OTP Input
+                otpSection.style.display = 'block';
+                loginBtn.style.display = 'block';
+                sendOtpBtn.textContent = "Resend";
+                adminEmailInput.readOnly = true;
+            });
+
+            // 2. Login Handler
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const code = document.getElementById('adminCode').value.trim();
+
+                if (generatedOTP && code === generatedOTP) {
                     // Success
                     authMessage.textContent = "Authentication Verified! Redirecting...";
                     authMessage.style.color = "green";
@@ -109,7 +100,7 @@
                     }, 1000);
                 } else {
                     // Fail
-                    authMessage.textContent = "Invalid Code. Please try again.";
+                    authMessage.textContent = "Invalid OTP. Please try again.";
                     authMessage.style.color = "red";
                 }
             });
