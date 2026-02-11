@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test - Tripathy Telecom</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .quiz-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f9ff;
+        }
+
+        .option-input {
+            margin-right: 12px;
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">Tripathy Telecom</div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-btn">Home</a>
+            <a href="admin.html" class="nav-btn admin-btn">Admin</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header style="text-align: center; margin: 40px 0 20px;">
+            <h1>General Knowledge Mock Test</h1>
+            <p>Test your knowledge with these simple questions!</p>
+        </header>
+
+        <div class="quiz-container">
+            <form id="quizForm">
+                <!-- Q1 -->
+                <div class="question-card">
+                    <div class="question-text">1. What is the capital of India?</div>
+                    <div class="options-grid">
+                        <label class="option-label"><input type="radio" name="q1" value="Mumbai" class="option-input">
+                            Mumbai</label>
+                        <label class="option-label"><input type="radio" name="q1" value="New Delhi"
+                                class="option-input"> New Delhi</label>
+                        <label class="option-label"><input type="radio" name="q1" value="Kolkata" class="option-input">
+                            Kolkata</label>
+                        <label class="option-label"><input type="radio" name="q1" value="Chennai" class="option-input">
+                            Chennai</label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="question-card">
+                    <div class="question-text">2. Which planet is known as the Red Planet?</div>
+                    <div class="options-grid">
+                        <label class="option-label"><input type="radio" name="q2" value="Venus" class="option-input">
+                            Venus</label>
+                        <label class="option-label"><input type="radio" name="q2" value="Mars" class="option-input">
+                            Mars</label>
+                        <label class="option-label"><input type="radio" name="q2" value="Jupiter" class="option-input">
+                            Jupiter</label>
+                        <label class="option-label"><input type="radio" name="q2" value="Saturn" class="option-input">
+                            Saturn</label>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="question-card">
+                    <div class="question-text">3. Who is known as the Father of the Nation in India?</div>
+                    <div class="options-grid">
+                        <label class="option-label"><input type="radio" name="q3" value="Jawaharlal Nehru"
+                                class="option-input"> Jawaharlal Nehru</label>
+                        <label class="option-label"><input type="radio" name="q3" value="Subhas Chandra Bose"
+                                class="option-input"> Subhas Chandra Bose</label>
+                        <label class="option-label"><input type="radio" name="q3" value="Mahatma Gandhi"
+                                class="option-input"> Mahatma Gandhi</label>
+                        <label class="option-label"><input type="radio" name="q3" value="Bhagat Singh"
+                                class="option-input"> Bhagat Singh</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-btn" style="width: 100%; margin-top: 10px;">Submit Test</button>
+            </form>
+
+            <div id="resultBox" class="result-box">
+                <h3>Quiz Completed!</h3>
+                <p>Your Score: <span id="scoreVal" class="score-text">0/3</span></p>
+                <button onclick="location.reload()" class="action-btn"
+                    style="background-color: var(--primary-color); color: white; margin-top: 15px;">Retake Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('quizForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Answers
+            const answers = {
+                q1: 'New Delhi',
+                q2: 'Mars',
+                q3: 'Mahatma Gandhi'
+            };
+
+            let score = 0;
+            const formData = new FormData(this);
+
+            // Check Answers
+            for (let [key, value] of formData.entries()) {
+                if (value === answers[key]) {
+                    score++;
+                }
+            }
+
+            // Show Result
+            document.getElementById('quizForm').style.display = 'none';
+            const resultBox = document.getElementById('resultBox');
+            document.getElementById('scoreVal').textContent = `${score}/${Object.keys(answers).length}`;
+            resultBox.style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
