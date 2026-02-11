@@ -142,9 +142,33 @@
             <div
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
                 <h2 style="margin: 0; border: none; padding: 0;">📋 Attendance Log</h2>
-                <button id="seedDataBtn" class="action-btn" style="background-color: #64748b; color: white;">Generate
-                    Test Data</button>
+                <div>
+                    <button id="seedDataBtn" class="action-btn"
+                        style="background-color: #64748b; color: white; margin-right: 5px;">Generate
+                        Test Data</button>
+                    <button id="debugBtn" class="action-btn"
+                        style="background-color: #f59e0b; color: white;">Troubleshoot</button>
+                </div>
             </div>
+
+            <!-- Diagnostics Panel (Hidden by default) -->
+            <div id="debugPanel"
+                style="display:none; background: #fffbeb; border: 1px solid #fcd34d; padding: 15px; margin-bottom: 15px; border-radius: 8px; font-family: monospace; font-size: 0.9em; color: #333;">
+                <strong>System Diagnostics:</strong><br>
+                <span>Origin:</span> <span id="debugOrigin"></span><br>
+                <span>Protocol:</span> <span id="debugProtocol"></span><br>
+                <span>Storage Keys:</span> <span id="debugKeys"></span><br>
+                <hr style="border-top: 1px dashed #fcd34d; margin: 10px 0;">
+                <strong>Raw Data (Users):</strong>
+                <div id="debugUsers"
+                    style="max-height: 100px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 5px;">
+                </div>
+                <strong>Raw Data (Records):</strong>
+                <div id="debugRecords"
+                    style="max-height: 100px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 5px;">
+                </div>
+            </div>
+
             <div class="table-container">
                 <table id="attendanceTable">
                     <thead>
@@ -377,6 +401,35 @@
 
                     alert("Test data added! Refreshing...");
                     loadData();
+                }
+            });
+
+            // DEBUG: Toggle Diagnostics
+            document.getElementById('debugBtn').addEventListener('click', () => {
+                const panel = document.getElementById('debugPanel');
+                if (panel.style.display === 'none') {
+                    panel.style.display = 'block';
+
+                    // Populate Info
+                    document.getElementById('debugOrigin').textContent = window.location.origin;
+                    document.getElementById('debugProtocol').textContent = window.location.protocol;
+
+                    // List Keys
+                    const keys = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        keys.push(localStorage.key(i));
+                    }
+                    document.getElementById('debugKeys').textContent = keys.join(', ') || "NONE";
+
+                    // Show Content
+                    const usersVal = localStorage.getItem(STORAGE_KEY_USERS);
+                    const recordsVal = localStorage.getItem(STORAGE_KEY_DATA);
+
+                    document.getElementById('debugUsers').textContent = usersVal ? usersVal.substring(0, 500) : "NULL";
+                    document.getElementById('debugRecords').textContent = recordsVal ? recordsVal.substring(0, 500) : "NULL";
+
+                } else {
+                    panel.style.display = 'none';
                 }
             });
 
