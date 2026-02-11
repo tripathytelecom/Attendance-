@@ -157,6 +157,35 @@
 
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            <h2>Edit User Details</h2>
+            <form id="editUserForm">
+                <input type="hidden" id="editIndex">
+                <div class="form-group">
+                    <label for="editName">Full Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editMobile">Mobile Number</label>
+                    <input type="tel" id="editMobile" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Email Address</label>
+                    <input type="email" id="editEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPassword">Password</label>
+                    <input type="text" id="editPassword" required placeholder="Enter new password">
+                </div>
+                <button type="submit" class="auth-btn" style="background-color: var(--primary-color);">Save
+                    Changes</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Security Check
         if (!sessionStorage.getItem('attendance_admin_logged_in')) {
@@ -185,7 +214,10 @@
                         <td>${user.name}</td>
                         <td>${user.mobile}</td>
                         <td>${user.email}</td>
-                        <td><button class="action-btn btn-delete" onclick="deleteUser(${index})">Delete</button></td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="openEditModal(${index})" style="background-color: #e0f2fe; color: #0284c7; margin-right: 5px;">Edit</button>
+                            <button class="action-btn btn-delete" onclick="deleteUser(${index})">Delete</button>
+                        </td>
                     `;
                     usersBody.appendChild(tr);
                 });
@@ -229,6 +261,51 @@
                     records = records.filter(r => r.id !== id);
                     localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify(records));
                     loadData();
+                }
+            };
+
+            // --- Edit User Logic ---
+            window.openEditModal = (index) => {
+                const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
+                const user = users[index];
+                if (user) {
+                    document.getElementById('editIndex').value = index;
+                    document.getElementById('editName').value = user.name;
+                    document.getElementById('editMobile').value = user.mobile;
+                    document.getElementById('editEmail').value = user.email;
+                    document.getElementById('editPassword').value = user.password; // Show current password
+
+                    document.getElementById('editUserModal').style.display = 'block';
+                }
+            };
+
+            window.closeEditModal = () => {
+                document.getElementById('editUserModal').style.display = 'none';
+            };
+
+            document.getElementById('editUserForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const index = document.getElementById('editIndex').value;
+                const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
+
+                if (users[index]) {
+                    users[index].name = document.getElementById('editName').value;
+                    users[index].mobile = document.getElementById('editMobile').value;
+                    users[index].email = document.getElementById('editEmail').value;
+                    users[index].password = document.getElementById('editPassword').value;
+
+                    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+                    loadData();
+                    closeEditModal();
+                    alert('User details updated successfully!');
+                }
+            });
+
+            // Close modal if clicking outside
+            window.onclick = (event) => {
+                const modal = document.getElementById('editUserModal');
+                if (event.target == modal) {
+                    closeEditModal();
                 }
             };
 
