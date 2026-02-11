@@ -199,8 +199,22 @@
 
             // --- 1. Load Stats & Tables ---
             function loadData() {
-                const users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
-                const records = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
+                let users = [];
+                let records = [];
+
+                try {
+                    users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
+                } catch (e) {
+                    console.error("Error parsing users:", e);
+                    users = [];
+                }
+
+                try {
+                    records = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
+                } catch (e) {
+                    console.error("Error parsing records:", e);
+                    records = [];
+                }
 
                 document.getElementById('totalUsers').textContent = users.length;
                 document.getElementById('totalRecords').textContent = records.length;
@@ -208,34 +222,44 @@
                 // Render Users
                 const usersBody = document.querySelector('#usersTable tbody');
                 usersBody.innerHTML = '';
-                users.forEach((user, index) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${user.name}</td>
-                        <td>${user.mobile}</td>
-                        <td>${user.email}</td>
-                        <td>
-                            <button class="action-btn btn-edit" onclick="openEditModal(${index})" style="background-color: #e0f2fe; color: #0284c7; margin-right: 5px;">Edit</button>
-                            <button class="action-btn btn-delete" onclick="deleteUser(${index})">Delete</button>
-                        </td>
-                    `;
-                    usersBody.appendChild(tr);
-                });
+
+                if (users.length === 0) {
+                    usersBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #666; padding: 20px;">No registered users found.</td></tr>';
+                } else {
+                    users.forEach((user, index) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${user.name}</td>
+                            <td>${user.mobile}</td>
+                            <td>${user.email}</td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="openEditModal(${index})" style="background-color: #e0f2fe; color: #0284c7; margin-right: 5px;">Edit</button>
+                                <button class="action-btn btn-delete" onclick="deleteUser(${index})">Delete</button>
+                            </td>
+                        `;
+                        usersBody.appendChild(tr);
+                    });
+                }
 
                 // Render Attendance
                 const recordsBody = document.querySelector('#attendanceTable tbody');
                 recordsBody.innerHTML = '';
-                records.sort((a, b) => b.timestamp - a.timestamp); // Sort new first
-                records.forEach((record) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${record.name}</td>
-                        <td>${record.date}</td>
-                        <td>${record.time}</td>
-                        <td><button class="action-btn btn-delete" onclick="deleteAttendance('${record.id}')">Delete</button></td>
-                    `;
-                    recordsBody.appendChild(tr);
-                });
+
+                if (records.length === 0) {
+                    recordsBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #666; padding: 20px;">No attendance records found.</td></tr>';
+                } else {
+                    records.sort((a, b) => b.timestamp - a.timestamp); // Sort new first
+                    records.forEach((record) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${record.name}</td>
+                            <td>${record.date}</td>
+                            <td>${record.time}</td>
+                            <td><button class="action-btn btn-delete" onclick="deleteAttendance('${record.id}')">Delete</button></td>
+                        `;
+                        recordsBody.appendChild(tr);
+                    });
+                }
             }
 
             // --- 2. Load Notice ---
