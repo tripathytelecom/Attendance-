@@ -139,7 +139,12 @@
 
         <!-- Attendance Management -->
         <div class="admin-section">
-            <h2>📋 Attendance Log</h2>
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">
+                <h2 style="margin: 0; border: none; padding: 0;">📋 Attendance Log</h2>
+                <button id="seedDataBtn" class="action-btn" style="background-color: #64748b; color: white;">Generate
+                    Test Data</button>
+            </div>
             <div class="table-container">
                 <table id="attendanceTable">
                     <thead>
@@ -348,6 +353,31 @@
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 sessionStorage.removeItem('attendance_admin_logged_in');
                 window.location.href = 'index.html';
+            });
+
+            // DEBUG: Seed Test Data
+            document.getElementById('seedDataBtn').addEventListener('click', () => {
+                const confirmSeed = confirm("This will add fake users and attendance records for testing. Continue?");
+                if (confirmSeed) {
+                    const fakeUsers = [
+                        { name: "Test User 1", mobile: "1234567890", email: "test1@example.com", password: "password123" },
+                        { name: "Test User 2", mobile: "0987654321", email: "test2@example.com", password: "password456" }
+                    ];
+
+                    const fakeRecords = [
+                        { id: Date.now().toString(), name: "Test User 1", date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), timestamp: Date.now() }
+                    ];
+
+                    // Merge with existing
+                    const existingUsers = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS)) || [];
+                    const existingRecords = JSON.parse(localStorage.getItem(STORAGE_KEY_DATA)) || [];
+
+                    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify([...existingUsers, ...fakeUsers]));
+                    localStorage.setItem(STORAGE_KEY_DATA, JSON.stringify([...existingRecords, ...fakeRecords]));
+
+                    alert("Test data added! Refreshing...");
+                    loadData();
+                }
             });
 
             // Init
