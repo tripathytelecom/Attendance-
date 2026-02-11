@@ -98,6 +98,9 @@
                 users.push(newUser);
                 localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
 
+                // DEBUG: Confirm Save
+                alert(`User Account Created!\n\nName: ${newUser.name}\nTotal Users in System: ${users.length}\n\nData saved to Browser Storage.`);
+
                 // 5. Success UI
                 signupForm.style.display = 'none';
                 document.querySelector('.auth-link').style.display = 'none';
